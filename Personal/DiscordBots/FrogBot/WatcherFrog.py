@@ -7,7 +7,7 @@ from discord import *
 import random
 from discord.ext import commands
 
-TOKEN = 'OTQ3NTc1OTIwMjIxMzU2MDQy.YhvQ2A.mlzjdylYszCQ-RGK9LU2xsAplUs'
+TOKEN = 'x'
 
 cmdList = ['exclude ()', '.killBot', '.chatLog', '.test (arg)', '.magicBall ("arg?")',
            '.roll (smallerNum LargerNum)', '.squaredCircle', '.Brunswick', '.Jake', '.Meez',
