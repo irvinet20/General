@@ -1,0 +1,6 @@
+gambling system - upgrade to variable probability rates based on 'bank' reserves
+
+voting system - vote mutes, roles, moderation, rules?
+
+
+point shop - timeouts, roles, etc
