@@ -254,44 +254,7 @@ def validUserTransaction(user, amt, tar):
 @client.command()
 async def squaredCircle(ctx):
     await ctx.send('A mythical object that is of a plane too high for Jake')
-    
-@client.command()
-async def Jake(ctx):
-    await ctx.send('Potentially the dumbest user here')
-
-@client.command()
-async def Brunswick(ctx):
-    await ctx.send('Spying on everyone almost as much as myself')
-    
-@client.command()
-async def Sandman(ctx):
-    await ctx.send('I have the [moral highground] [anyone] dont try it')
-    
-@client.command()
-async def Lauman(ctx):
-    await ctx.send('You think there would be a command for lauman? thatd be toxic')
-    
-@client.command()
-async def Meez(ctx):
-    await ctx.send('Psychopath spiderman wannabe, most likely to go to chernobyl to look for a mutant spider')
-    
-@client.command()
-async def Jared(ctx):
-    await ctx.send('A man of many titles: Hometown worker, OW pro, MinMaxer, Rougelike spammer')
-    
-@client.command()
-async def Lawson(ctx):
-    await ctx.send('Error: no user. likely cause: deleted acc')
-    
-@client.command()
-async def killBot(ctx):
-    choice = random.randint(1,3)
-    if choice == 1:
-        await ctx.send('Its treason, then')
-    elif choice == 2:
-        await ctx.send('Im sorry Dave, Im afraid I cant do That')
-    elif choice == 3:
-        await ctx.send('Nice try chump')
+   
 
 @client.command()
 async def helpList(ctx):
@@ -299,20 +262,6 @@ async def helpList(ctx):
         await ctx.send(i)
     
     
-    
-    
-
-        
-#@client.command()
-#async def muteLaw(ctx):
-#    global LawsonVote
-#    LawsonVote = LawsonVote + 1
-#    if LawsonVote == 3:
-#        
-#        LawsonVote = 0
-#        return
-#    else:
-#        await ctx.send("more votes req.")
         
 #@client.event
 #async def on_connect():
