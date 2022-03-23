@@ -5,17 +5,12 @@ import random
 import discord
 from discord import *
 import random
+import asyncio
+import datetime
 from discord.ext import commands
 
 TOKEN = 'x'
 
-cmdList = ['exclude ()', '.chatLog', '.test (arg)', '.magicBall ("arg?")',
-           '.roll (smallerNum LargerNum)', '.squaredCircle', '.Brunswick', '.helpList', 'x']
-           
-gmbList = ['exclude ()', '.gambleCoin (bet)']
-
-
-LawsonVote = 0
 DailyChatLog = []
 DailyChatLogLength = 0
 
@@ -134,7 +129,8 @@ async def gambleBalance(ctx):
         for line in f:
             (holder, bal) = line.split('=')
             if holder == asker:
-                await ctx.send(bal)
+                embed=discord.Embed(title="User Balance!", description="**{0}** has **{1}**points!    ".format(asker, bal), color=0xff00f6)
+                await ctx.send(embed=embed)
     f.close()
             
             
@@ -147,21 +143,24 @@ async def gambleCoin(ctx, args1): #check first then rewrite?
         for line in f:
             (holder, bal) = line.split('=')
             if holder == bettor:
-                if bal >= args1:
+                if int(bal) >= bet:
                     outcomeEvent = random.randint(0,1)
                     if outcomeEvent == 1:
                         newBal = str(int(bal)+bet)
                         line = line.replace(bal, newBal)
                         rewrite = rewrite+line+'\n'
-                        await ctx.send("winner, new balance "+newBal)
+                        embed=discord.Embed(title="Coin Flip!", description="**{0}** flipped a coin betting **{1}**  points and **won**! \n Their new balance is: **{2}** ".format(bettor, str(bet), newBal), color=0xff00f6)
+                        await ctx.send(embed=embed)
                     else:
                         newBal = str(int(bal)-bet)
                         line = line.replace(bal, newBal)
                         rewrite = rewrite+line+'\n'
-                        await ctx.send("loser, new balace "+newBal)
+                        embed=discord.Embed(title="Coin Flip!", description="**{0}** flipped a coin betting **{1}**  points but **lost**! \n Their new balance is: **{2}** ".format(bettor, str(bet), newBal), color=0xff00f6)
+                        await ctx.send(embed=embed)
                 else:
                     rewrite = rewrite+line
-                    await ctx.send("Not enough points")
+                    embed=discord.Embed(title="Coin Flip!", description="**{0}** Tried flipping a coin and betting **{1}**  points but they lacked the points, they would have **won**! \n Their balance is: **{2}** ".format(bettor, str(bet), bal), color=0xff00f6)
+                    await ctx.send(embed=embed)
             else:
                 rewrite = rewrite+line
     f.close()
@@ -174,7 +173,7 @@ async def gambleGift(ctx, gift, reciever):
     gifter = ctx.author.name
     giftAmt = int(gift)
     rewrite = ''
-    (validTransaction, validReciever) = validUserTransaction(ctx, int(gift), reciever)
+    (validTransaction, validReciever) = validUserTransaction(gifter, int(gift), reciever)
     if validTransaction and validReciever:
         with open('GamblingAccounts.txt', 'r') as f:
             for line in f:
@@ -193,11 +192,14 @@ async def gambleGift(ctx, gift, reciever):
         with open('GamblingAccounts.txt', 'w') as f:
             f.write(rewrite)
             f.close()
-        await ctx.send('Sent')
+        embed=discord.Embed(title="Points Sent!", description="**{0}** sent **{1}** **{2}** points! ".format(gifter, reciever, gift), color=0xff00f6)
+        await ctx.send(embed=embed)
     elif not validTransaction:
-        await ctx.send('not enough points'+str(validTransaction)+str(validReciever))
+        embed=discord.Embed(title="Gift Failure!", description="**{0}** tried to send **{1}** **{2}** points but was too broke! ".format(gifter, reciever, gift), color=0xff00f6)
+        await ctx.send(embed=embed)
     elif not validReciever:
-        await ctx.send('not a valid recipient')
+        embed=discord.Embed(title="Gift Failure!", description="**{0}** tried to send **{1}** **{2}** points but they dont exist! ".format(gifter, reciever, gift), color=0xff00f6)
+        await ctx.send(embed=embed)
         
 ####### 
 #
@@ -206,8 +208,32 @@ async def gambleGift(ctx, gift, reciever):
 #######
 
 @client.command()
-async def pointTimeout(ctx, buyer, target):
-    return true
+async def pointMute(ctx, member: discord.Member):
+    buyer = ctx.author.name
+    rewrite = ''
+    (validTransaction, validReciever) = validUserTransaction(buyer, 1000, member.name)
+    if validTransaction and validReciever:
+        await member.edit(mute = True)
+        with open('GamblingAccounts.txt', 'r') as f:
+            for line in f:
+                (holder, bal) = line.split('=')
+                if holder == buyer:
+                    newBal = str(int(bal)-1000)
+                    line = line.replace(bal, newBal)
+                    rewrite = rewrite+line+'\n'
+                else:
+                    rewrite = rewrite+line
+            f.close()
+        with open('GamblingAccounts.txt', 'w') as f:
+            f.write(rewrite)
+            f.close()
+        embed=discord.Embed(title="User Muted!", description="**{0}** was muted by **{1}**! for 15s \n New Balance: **{2}**".format(member, ctx.message.author, newBal), color=0xff00f6)
+        await ctx.send(embed=embed)
+        await asyncio.sleep(15)
+        await member.edit(mute = False)
+    else:
+        embed=discord.Embed(title="User Mute Attempt!", description="**{0}** tried to mute **{1}** for 15s but was too broke!".format(ctx.message.author, member), color=0xff00f6)
+        await ctx.send(embed=embed)
     
     
 #######
@@ -216,19 +242,23 @@ async def pointTimeout(ctx, buyer, target):
 #
 #######
 
-#@param str, int
+#@desc: Validates user transaction request when another party is involved
+#@param: str, int
+#@return: returns boolean
 def validUserTransaction(user, amt):
     retValue = False
     with open('GamblingAccounts.txt', 'r') as f:
         for line in f:
             (holder, bal) = line.split('=')
-            if holder == user:
+            if holder == use:
                 if int(bal) >= amt:
                     retValue = True
         f.close()
     return retValue
-
-#@param str, int, str
+    
+#@desc: Validates user transaction request when another party is involved
+#@param: str, int, str
+#@return: list of two booleans 
 def validUserTransaction(user, amt, tar):
     retValue = [False, False]
     with open('GamblingAccounts.txt', 'r') as f:
@@ -238,29 +268,30 @@ def validUserTransaction(user, amt, tar):
                 if int(bal) >= amt:
                     retValue[0] = True
             elif holder == tar:
-                retValue[1] == True
+                retValue[1] = True
         f.close()
     return retValue
 
 
 
-#######
-#
-#Jokes
-#
-#######  
 
-@client.command()
-async def squaredCircle(ctx):
-    await ctx.send('A mythical object that is of a plane too high for Jake')
+#@client.event
+#async def on_connect():
+#    if os.path.exists('GamblingAccounts'):
+#        await client.get_channel(882033829177597982).send(f'Accounts Found')
+#    else:
+#        await client.get_channel(882033829177597982).send(f'No Accounts Found') 
+#        with open('GamblingAccounts', 'w') as f:
+#            f.write('test')   
+
+
     
+#@client.event
+#async def on_connect():
+#    await client.get_channel(846357507454140441).send(f'Watching')
+
     
-    
-@client.command()
-async def helpList(ctx):
-    for i in cmdList:
-        await ctx.send(i)
-    
+
     
 #@client.event
 #async def on_disconnect():
