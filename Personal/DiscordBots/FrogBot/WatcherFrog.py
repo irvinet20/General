@@ -8,23 +8,41 @@ import random
 import asyncio
 import datetime
 from discord.ext import commands
+import requests
+import bs4
+import time
+from selenium import webdriver 
+from selenium .webdriver.chrome.options import Options
+from fake_useragent import UserAgent
+
+
+ua = UserAgent()
+
+opts = Options()
+opts.add_argument("user-agent="+ua.random)
+driver = webdriver.Chrome(options=opts)
+
+
+
 
 TOKEN = 'x'
 
 DailyChatLog = []
 DailyChatLogLength = 0
 
+CommandNameList = ['gambleCoin', 'gambleBalance', 'gambleGift', 'pointMute']
+
 intents = discord.Intents.default()
 intents.members = True
 
 
-client = commands.Bot(intents=intents, command_prefix = '.')
+client = commands.Bot(intents=intents, command_prefix = '/')
 FrogBot = Client()
 
 
-#general = client.get_channel(846357507454140441)
-#serverIndex = client.guilds.index(846357507454140438)
-#homeIndex = server.channels.index(846357507454140441)
+#general = client.get_channel(x)
+#serverIndex = client.guilds.index(x)
+#homeIndex = server.channels.index(x)
 
 #######
 #
@@ -34,7 +52,7 @@ FrogBot = Client()
 @client.event
 async def on_ready():
     print('test {0.user}'.format(client))
-    guild = client.get_guild(846357507454140438)
+    guild = client.get_guild(x)
     memberList = guild.members
     memberNameList = []
     for i in memberList:
@@ -42,13 +60,6 @@ async def on_ready():
     
     if os.path.exists('GamblingAccounts.txt'):
         await client.get_channel(882033829177597982).send(f'Accounts Found')
-        #with open('GamblingAccounts', 'r') as f:
-        #    for name in memberNameList:
-        #        if name not in f: #error with substring names
-        #            with open('GamblingAccounts', 'a') as e:
-        #                e.write(name + '=' + '1000')
-        #                e.write('\n')
-                    
     else:
         await client.get_channel(882033829177597982).send(f'No Accounts Found') 
         with open('GamblingAccounts.txt', 'w') as f:
@@ -56,6 +67,18 @@ async def on_ready():
                 f.write(members.name + '=' + '1000')
                 f.write('\n')
         f.close()
+        
+    await track()
+        
+    
+        
+        
+        
+        
+    
+    #for i in CommandNameList:
+        #registerGuildCommand(i)
+        
     
 ########
 #
@@ -115,6 +138,7 @@ async def roll(ctx, args1, args2):
         return
     retValue = random.randint(int(args1), int(args2))
     await ctx.send(retValue)
+    
     
 #######
 #
@@ -271,7 +295,43 @@ def validUserTransaction(user, amt, tar):
                 retValue[1] = True
         f.close()
     return retValue
-
+    
+async def track():
+    while True:
+        driver.get("https://www.adafruit.com/product/4295")
+        html = driver.page_source
+        scrape = bs4.BeautifulSoup(html,"html.parser")
+    
+        itemInStore = scrape.find_all("span",{"class":"meta_pid_box_status"})
+        inStock = []
+        
+    
+        for product in itemInStore:
+            if("Out of stock" not in product.text):
+                inStock.append(product.find_parent("a")['href'])
+            
+        baseUrl = "https://www.adafruit.com"
+        if inStock  == []:
+            await client.get_channel(882033829177597982).send(f'No RPIs on Adafruit')
+        else:
+            for part in inStock:
+                whole = baseUrl + part
+                await client.get_channel(882033829177597982).send(whole)
+    
+        await asyncio.sleep(15)
+    
+ 
+    
+#@desc: register the command
+#@param: str
+#@return: void
+#def registerGuildCommand(commandName):
+#    url = "https://discord.com/api/v8/applications/<app_id>/guilds/<guild_id>/commands"
+#    json = {"name": commandName, "type": 2}
+#    headers = {"Authorization": "Bot OTQ3NTc1OTIwMjIxMzU2MDQy.YhvQ2A.z6ipLcmnw4JWTkoNeSkcPwpcL6E"}
+#    r = requests.post(url, headers=headers, json=json)
+#    print(r)
+    
 
 
 
